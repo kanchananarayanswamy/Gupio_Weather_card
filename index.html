@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather Info Card</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(130deg, #e0edfa 60%, #acf0f2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+    .bg-anim {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      width: 100vw; height: 100vh;
+    }
+    /* Sun */
+    .sun {
+      position: absolute;
+      left: 14vw; top: 12vh;
+      width: 76px; height: 76px;
+      z-index: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle at 56% 40%, #ffe066 75%, #ffeeae 100%);
+      box-shadow: 0 0 32px #ffe06688;
+      animation: sun-bounce 4s cubic-bezier(.62,.01,.27,.92) infinite;
+    }
+    @keyframes sun-bounce {
+      0%,100% { transform: translateY(0);}
+      50% { transform: translateY(-16px);}
+    }
+    /* Sun rays rotating */
+    .rays {
+      position: absolute;
+      left: 13vw; top: 12vh;
+      width: 76px; height: 76px;
+      z-index: 1;
+      pointer-events: none;
+      animation: rays-spin 16s linear infinite;
+      transform-origin: 38px 38px;
+      background: url('data:image/svg+xml;utf8,<svg width="76" height="76" xmlns="http://www.w3.org/2000/svg"><g stroke="%23fff9b2" stroke-width="6"><line x1="38" y1="5" x2="38" y2="20"/><line x1="38" y1="56" x2="38" y2="71"/><line x1="8" y1="38" x2="24" y2="38"/><line x1="52" y1="38" x2="68" y2="38"/><line x1="20" y1="20" x2="30" y2="30"/><line x1="56" y1="20" x2="46" y2="30"/><line x1="20" y1="56" x2="30" y2="46"/><line x1="56" y1="56" x2="46" y2="46"/></g></svg>') no-repeat center/76px;
+      opacity: 0.9;
+    }
+    @keyframes rays-spin { 100% {transform: rotate(360deg);} }
+    /* Clouds using CSS - multiple clouds, moving horizontally */
+    .cloud {
+      position: absolute;
+      top: 19vh;
+      left: 0vw;
+      width: 120px; height: 38px;
+      background: radial-gradient(circle at 20px 14px, #fff 60%, #dde9ee 100%);
+      border-radius: 60px 55px 58px 57px / 28px 29px 34px 27px;
+      opacity: 0.33;
+      animation: cloud-move 30s linear infinite;
+      z-index: 1;
+    }
+    .cloud.c2 { top: 9vh; left: 45vw; width: 95px; opacity: 0.28; animation-delay: 7s;}
+    .cloud.c3 { top: 28vh; left: 60vw; width: 76px; opacity: 0.23; animation-delay: 15s;}
+    @keyframes cloud-move {
+      0% { left: -160px;}
+      100% { left: 110vw;}
+    }
+    /* RAIN animation */
+    .rainy .rain {
+      display: block;
+    }
+    .rain {
+      position: absolute;
+      left: calc(50vw - 60px); top: 22vh;
+      width: 80px;
+      height: 70px;
+      pointer-events: none;
+      z-index: 2;
+      display: none;
+    }
+    .raindrop {
+      position: absolute;
+      width: 4px; height: 16px;
+      background: #7dbaf9;
+      border-radius: 5px;
+      opacity: .62;
+      animation: rain-fall 1.5s linear infinite;
+    }
+    .raindrop.r1 { left: 6px; animation-delay:.0s;}
+    .raindrop.r2 { left: 18px; animation-delay:.3s;}
+    .raindrop.r3 { left: 32px; animation-delay:.6s;}
+    .raindrop.r4 { left: 49px; animation-delay:.1s;}
+    .raindrop.r5 { left: 65px; animation-delay:.45s;}
+    @keyframes rain-fall {
+      0% { top: 2px;}
+      100% { top:42px; opacity:0;}
+    }
+    /* SNOW animation */
+    .snowy .snow {
+      display: block;
+    }
+    .snow {
+      position: absolute;
+      left: calc(50vw - 60px); top: 22vh;
+      width: 80px; height: 62px;
+      pointer-events: none;
+      z-index: 2;
+      display: none;
+    }
+    .flake {
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      opacity: .7;
+      animation: snow-fall 2.3s linear infinite;
+      box-shadow: 0 0 8px #e0e7fa;
+    }
+    .flake.f1 { left: 10px; animation-delay:0s;}
+    .flake.f2 { left: 32px; animation-delay:.7s;}
+    .flake.f3 { left: 52px; animation-delay:1.1s;}
+    .flake.f4 { left: 16px; animation-delay:.3s;}
+    .flake.f5 { left: 68px; animation-delay:1.6s;}
+    @keyframes snow-fall {
+      0% { top: 2px; opacity:.7;}
+      80% { opacity:.9;}
+      100% { top:45px; opacity:0;}
+    }
+    /* THUNDER animation */
+    .thunder .thunderbolt {
+      display: block;
+    }
+    .thunderbolt {
+      position: absolute;
+      pointer-events: none;
+      left: calc(50vw - 32px); top: 26vh;
+      width: 44px; height: 40px;
+      display: none;
+      z-index: 3;
+      animation: bolt-flash .33s linear infinite alternate;
+    }
+    @keyframes bolt-flash { 0% {opacity:.85;} 100%{opacity:.20;} }
+    /* Weather card styling */
+    .weather-card {
+      width: 335px;
+      padding: 32px 24px 22px 24px;
+      border-radius: 22px;
+      box-shadow: 0 6px 32px #4c6cb61a;
+      text-align: center;
+      transition: background 0.4s cubic-bezier(0.4,0,0.2,1);
+      color: #fff;
+      position: relative;
+      z-index: 5;
+      background: linear-gradient(135deg, #fad961 78%, #ffd200 96%);
+      backdrop-filter: blur(2.8px) saturate(140%);
+    }
+    .cloudy { background: linear-gradient(135deg, #bcc6cc 88%, #748b99 100%);}
+    .rainy  { background: linear-gradient(135deg, #3d5676 86%, #51718f 100%);}
+    .thunder{ background: linear-gradient(135deg, #8c7aea 75%, #272b37 100%);}
+    .snowy  { background: linear-gradient(135deg, #d8f6ff 84%, #bbe7fb 99%);}
+    .clear  { background: linear-gradient(135deg, #6bd4ac 92%, #357059 99%);}
+    .weather-location {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px #0001;
+    }
+    .weather-temp {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+      text-shadow: 0 4px 10px #0002;
+    }
+    .weather-condition {
+      font-size: 1.13rem;
+      margin-bottom: 13px;
+      text-transform: uppercase;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+    }
+    .refresh-btn {
+      background: rgba(255,255,255,0.94);
+      color: #25313b;
+      border: none;
+      border-radius: 18px;
+      padding: 8px 26px;
+      font-weight: 600;
+      font-size: 1.06rem;
+      cursor: pointer;
+      box-shadow: 0 1px 6px #3444421a;
+      transition: background 0.18s, color 0.18s;
+      margin-top: 8px;
+    }
+    .refresh-btn:hover {
+      background: #25313b;
+      color: #ffe066;
+    }
+    .control-bar {
+      margin-bottom: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+    .control-bar label {
+      font-size: 0.97rem;
+      color: #f7f7ef;
+      margin-right: 6px;
+      text-shadow: 0 2px 6px #23241212;
+    }
+    .control-bar select, .control-bar input[type="number"] {
+      padding: 6px 10px;
+      font-size: 1rem;
+      border-radius: 7px;
+      border: none;
+      text-align: center;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- CSS Animated Background -->
+  <div class="bg-anim">
+    <div class="sun"></div>
+    <div class="rays"></div>
+    <div class="cloud"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+    <div class="rain">
+      <div class="raindrop r1"></div>
+      <div class="raindrop r2"></div>
+      <div class="raindrop r3"></div>
+      <div class="raindrop r4"></div>
+      <div class="raindrop r5"></div>
+
+    </div>
+    <div class="snow">
+      <div class="flake f1"></div>
+      <div class="flake f2"></div>
+      <div class="flake f3"></div>
+      <div class="flake f4"></div>
+      <div class="flake f5"></div>
+    </div>
+    <svg class="thunderbolt" width="44" height="50" viewBox="0 0 10 40">
+      <polyline points="14,0 24,17 18,17 26,40 32,14 22,14 30,0"
+        fill="#ffed35" stroke="#fff490" stroke-width="2.1"/>
+    </svg>
+  </div>
+  <!-- WEATHER CARD -->
+  <div id="weatherCard" class="weather-card sunny">
+    <div class="control-bar">
+      <div>
+        <label for="selLocation">Location</label>
+        <select id="selLocation" onchange="updateWeatherFromInputs()">
+          <option>Bangalore</option>
+          <option>London</option>
+          <option>Mumbai</option>
+          <option>Tokyo</option>
+          <option>Chicago</option>
+          <option>Mexico City</option>
+          <option>Moodbidhre</option>
+
+        </select>
+      </div>
+      <div>
+        <label for="tempInput">Temperature</label>
+        <input id="tempInput" type="number" min="-40" max="60" value="28" oninput="updateWeatherFromInputs()"/> °C
+      </div>
+      <div>
+        <label for="selCondition">Condition</label>
+        <select id="selCondition" onchange="updateWeatherFromInputs()">
+          <option value="sunny">Sunny</option>
+          <option value="cloudy">Cloudy</option>
+          <option value="rainy">Rainy</option>
+          <option value="clear">Clear</option>
+          <option value="snowy">Snowy</option>
+          <option value="thunder">Thunder</option>
+        </select>
+      </div>
+    </div>
+    <div class="weather-location" id="location">Mysore</div>
+    <div class="weather-temp" id="temperature">28°C</div>
+    <div class="weather-condition" id="condition">Sunny</div>
+    <button class="refresh-btn" onclick="refreshWeather()">Refresh</button>
+  </div>
+  <script>
+    const data = [
+      {location: 'Bangalore', temp: 28, condition: 'Sunny', class: 'sunny'},
+      {location: 'London', temp: 17, condition: 'Cloudy', class: 'cloudy'},
+      {location: 'Mumbai', temp: 24, condition: 'Rainy', class: 'rainy'},
+      {location: 'Tokyo', temp: 12, condition: 'Clear', class: 'clear'},
+      {location: 'Chicago', temp: 1, condition: 'Snowy', class: 'snowy'},
+      {location: 'Mexico City', temp: 23, condition: 'Thunder', class: 'thunder'}
+    ];
+    let current = 0;
+    function renderWeather(idx) {
+      let {location, temp, condition, class: condClass} = data[idx];
+      document.getElementById('location').textContent = location;
+      document.getElementById('temperature').textContent = temp + '°C';
+      document.getElementById('condition').textContent = condition;
+      document.getElementById('weatherCard').className = 'weather-card ' + condClass;
+      document.getElementById('selLocation').value = location;
+      document.getElementById('tempInput').value = temp;
+      document.getElementById('selCondition').value = condClass;
+      updateWeatherBg(condClass);
+    }
+    function refreshWeather() {
+      current = (current + 1) % data.length;
+      renderWeather(current);
+    }
+    function updateWeatherFromInputs() {
+      let location = document.getElementById('selLocation').value;
+      let temp = document.getElementById('tempInput').value;
+      let condClass = document.getElementById('selCondition').value;
+      let condLabel = document.getElementById('selCondition').options[document.getElementById('selCondition').selectedIndex].text;
+      document.getElementById('location').textContent = location;
+      document.getElementById('temperature').textContent = temp + '°C';
+      document.getElementById('condition').textContent = condLabel;
+      document.getElementById('weatherCard').className = 'weather-card ' + condClass;
+      updateWeatherBg(condClass);
+    }
+    function updateWeatherBg(type) {
+      document.body.classList.remove('sunny','cloudy','rainy','thunder','snowy','clear');
+      document.body.classList.add(type);
+    }
+    renderWeather(0);
+  </script>
+</body>
+</html>
